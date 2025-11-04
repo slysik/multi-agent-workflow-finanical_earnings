@@ -1,0 +1,4 @@
+id,name,email,signup_date,age,city
+1,John Doe,john@example.com,2025-10-15,28,New York
+2,Jane Smith,jane@example.com,2025-10-20,32,Los Angeles
+3,Bob Johnson,bob@example.com,2025-11-01,45,Chicago

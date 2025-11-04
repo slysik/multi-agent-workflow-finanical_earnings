@@ -637,10 +637,14 @@ def create_and_implement_patch(
     # Extract the patch plan file path from the response
     patch_file_path = response.output.strip()
 
-    # Validate that it looks like a file path
-    if not patch_file_path.startswith("specs/patch/") or not patch_file_path.endswith(
-        ".md"
-    ):
+    # Validate that it looks like a file path (handle both absolute and relative paths)
+    # Check if it's a valid patch file path and ends with .md
+    is_valid_path = (
+        patch_file_path.endswith(".md") and
+        ("specs/patch/" in patch_file_path or "/patch/" in patch_file_path)
+    )
+
+    if not is_valid_path:
         logger.error(f"Invalid patch plan path returned: {patch_file_path}")
         return None, AgentPromptResponse(
             output=f"Invalid patch plan path: {patch_file_path}", success=False

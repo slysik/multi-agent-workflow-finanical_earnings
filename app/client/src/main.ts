@@ -222,8 +222,8 @@ function displayResults(response: QueryResponse, query: string) {
   // Create download button
   const downloadButton = document.createElement('button');
   downloadButton.className = 'download-button query-download-button';
-  downloadButton.innerHTML = '⬇';
-  downloadButton.title = 'Export results as CSV';
+  downloadButton.textContent = 'Export';
+  downloadButton.title = 'Export query results as CSV';
   downloadButton.style.marginRight = '0.5rem';
   downloadButton.onclick = async () => {
     try {
