@@ -76,14 +76,32 @@ bun run dev
 
 ## Usage
 
-1. **Upload Data**: Click "Upload Data" to open the modal
-   - Use sample data buttons for quick testing
-   - Or drag and drop your own .csv or .json files
-   - Uploading a file with the same name will overwrite the existing table
-2. **Query Your Data**: Type a natural language query like "Show me all users who signed up last week"
-   - Press `Cmd+Enter` (Mac) or `Ctrl+Enter` (Windows/Linux) to run the query
-3. **View Results**: See the generated SQL and results in a table format
-4. **Manage Tables**: Click the × button on any table to remove it
+### Analyzing Earnings Reports
+
+1. **Prepare Your Report**: Place your earnings report in the `data/` directory
+   - Supported format: Plain text (.txt) files
+   - Example: `data/earnings_report_sample.txt`
+
+2. **Run Analysis**: Submit the report path to the API
+   ```bash
+   curl -X POST http://localhost:8000/analyze \
+     -H "Content-Type: application/json" \
+     -d '{"report_path": "data/earnings_report_sample.txt"}'
+   ```
+
+3. **View Results**: The system returns comprehensive analysis including:
+   - **Financial Metrics**: Revenue, net income, EPS, operating margins, cash flow
+   - **Segment Performance**: Revenue and growth rates by business segment
+   - **Forward Guidance**: Projected metrics and growth targets
+   - **Sentiment Analysis**: Overall tone, key indicators, and identified risks
+   - **Executive Summary**: Investment recommendation (BUY/HOLD/SELL) with confidence score
+
+### Interactive API Testing
+
+Use the Swagger UI for interactive testing:
+- Visit: http://localhost:8000/docs
+- Use the built-in "Try it out" feature for each endpoint
+- View real-time responses and API documentation
 
 ## Development
 
@@ -123,66 +141,56 @@ bun run preview            # Preview production build
 
 ## API Endpoints
 
-- `POST /api/upload` - Upload CSV/JSON file
-- `POST /api/query` - Process natural language query
-- `GET /api/schema` - Get database schema
-- `POST /api/insights` - Generate column insights
-- `GET /api/health` - Health check
+- `GET /` - API information and version
+- `GET /health` - Health check and agent status
+- `GET /agents` - List all available agents
+- `POST /analyze` - Analyze earnings report
+  - **Input**: `{"report_path": "path/to/report.txt"}`
+  - **Output**: Complete financial analysis with multi-agent insights
+- `GET /docs` - Interactive Swagger UI documentation
+- `GET /redoc` - ReDoc API documentation
 
 ## Security
 
-### SQL Injection Protection
+### Multi-Agent System Safety
 
-The application implements comprehensive SQL injection protection through multiple layers:
+The multi-agent earnings analyzer implements several security and reliability measures:
 
-1. **Centralized Security Module** (`core/sql_security.py`):
-   - Identifier validation for table and column names
-   - Safe query execution with parameterized queries
-   - Proper escaping for identifiers using SQLite's square bracket notation
-   - Dangerous operation detection and blocking
+1. **Input Validation**:
+   - File path validation to ensure only valid report files are processed
+   - Report content validation before analysis
+   - Graceful error handling for missing or malformed files
 
-2. **Input Validation**:
-   - All table and column names are validated against a whitelist pattern
-   - SQL keywords cannot be used as identifiers
-   - File names are sanitized before creating tables
-   - User queries are validated for dangerous operations
+2. **Agent Isolation**:
+   - Each agent operates independently with its own state
+   - No cross-contamination between analysis runs
+   - Agents validate input data before processing
 
-3. **Query Execution Safety**:
-   - Parameterized queries used wherever possible
-   - Identifiers (table/column names) are properly escaped
-   - Multiple statement execution is blocked
-   - SQL comments are not allowed in queries
+3. **API Security**:
+   - CORS configured for secure cross-origin requests
+   - All API endpoints validate request payloads
+   - Error responses are sanitized to avoid information leakage
 
-4. **Protected Operations**:
-   - File uploads with malicious names are sanitized
-   - Natural language queries cannot inject SQL
-   - Table deletion uses validated identifiers
-   - Data insights generation validates all inputs
+4. **Data Handling**:
+   - No sensitive data is stored or cached between requests
+   - Each analysis request is processed in isolation
+   - LLM interactions use secure API key authentication
 
-### Security Best Practices for Development
+### LLM Integration Security
 
-When adding new SQL functionality:
-1. Always use the `sql_security` module functions
-2. Never concatenate user input directly into SQL strings
-3. Use `execute_query_safely()` for all database operations
-4. Validate all identifiers with `validate_identifier()`
-5. For DDL operations, use `allow_ddl=True` explicitly
+- API keys are loaded from environment variables (never hardcoded)
+- Supports both Anthropic Claude and Mock LLM for testing
+- Failed LLM calls are handled gracefully with fallback logic
+- All LLM tokens and costs are logged for monitoring
 
-### Testing Security
+### Best Practices for Deployment
 
-Run the comprehensive security tests:
-```bash
-cd app/server
-uv run pytest tests/test_sql_injection.py -v
-```
-
-
-### Additional Security Features
-
-- CORS configured for local development only
-- File upload validation (CSV and JSON only)
-- Comprehensive error logging without exposing sensitive data
-- Database operations are isolated with proper connection handling
+1. Set `ANTHROPIC_API_KEY` environment variable securely
+2. Use HTTPS in production deployments
+3. Implement API rate limiting for production use
+4. Monitor token usage and costs
+5. Add authentication/authorization layers as needed
+6. Maintain audit logs of all analysis requests
 
 ## AI Developer Workflow (ADW)
 
